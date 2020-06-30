@@ -4,7 +4,7 @@ REM Datos de acceso al SQL de desarrollo
 SET DATABASE_HOST=172.16.218.2
 SET DATABASE_NAME=WebServiceExample
 SET DATABASE_USER=inconcert
-SET DATABASE_PASSWORD=InC0nc3rt!
+SET DATABASE_PASSWORD=**************
 SET DATABASE_TIMEOUT=600
 
 REM Armo el connection string
