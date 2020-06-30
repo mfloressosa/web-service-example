@@ -3,7 +3,7 @@
 const MSSQL_HOST = '172.16.218.2';
 const MSSQL_PORT = 1433;
 const MSSQL_USER = 'inconcert';
-const MSSQL_PASSWORD = 'InC0nc3rt!';
+const MSSQL_PASSWORD = '**************';
 const MSSQL_DATABASE = 'WebServiceExample';
 const MSSQL_CONN_TIMEOUT = 30 * 1000;
 const MSSQL_REQ_TIMEOUT = 300 * 1000;
