@@ -14,7 +14,7 @@
     "cookie-parser": "1.4.3",
     "express": "4.17.1",
     "log4js": "6.1.2",
-    "moment": "2.22.0",
+    "moment": "2.29.4",
     "mssql": "3.3.0"
   }
 }
