@@ -1,40 +1,48 @@
 // Importo librerías
-var http = require('http');
-var express = require('express');
-var bodyParser = require('body-parser');
-var cookieParser = require('cookie-parser');
-var compression = require('compression');
-var path = require('path');
-var fs = require('fs');
-var log4js = require("log4js");
-var moment = require('moment');
+const http = require('http');
+const https = require("https");
+const express = require('express');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const compression = require('compression');
+const path = require('path');
+const fs = require('fs');
+const log4js = require("log4js");
+const moment = require('moment');
 
 // Importo configuraciones
-var LOGGER_CONFIG = require("./config/logger.config").LOGGER_CONFIG;
-var HTTP_BINDING_HOST = require("./config/server.config").HTTP_BINDING_HOST;
-var HTTP_BINDING_PORT = require("./config/server.config").HTTP_BINDING_PORT;
-var REQUEST_SIZE_LIMIT = require("./config/server.config").REQUEST_SIZE_LIMIT;
+const LOGGER_CONFIG = require("./config/logger.config").LOGGER_CONFIG;
+const HTTP_BINDING_HOST = require("./config/server.config").HTTP_BINDING_HOST;
+const HTTP_BINDING_PORT = require("./config/server.config").HTTP_BINDING_PORT;
+const REQUEST_SIZE_LIMIT = require("./config/server.config").REQUEST_SIZE_LIMIT;
+const HTTPS_BINDING_HOST = require("./config/server.config").HTTPS_BINDING_HOST;
+const HTTPS_BINDING_PORT = require("./config/server.config").HTTPS_BINDING_PORT;
+const HTTPS_DEFAULT_KEY = require("./config/server.config").HTTPS_DEFAULT_KEY;
+const HTTPS_DEFAULT_CERT = require("./config/server.config").HTTPS_DEFAULT_CERT;
+const HTTPS_CIPHERS = require("./config/server.config").HTTPS_CIPHERS;
 
 // Importo funciones compartidas
-var DummyPromise = require('./shared/promise.shared.js').DummyPromise;
+const DummyPromise = require('./shared/promise.shared.js').DummyPromise;
 
 // Importo funcioón de inicialización para conexión a SQL
-var MsSqlInit = require('./mssql/mssql.init.js').MsSqlInit;
+const MsSqlInit = require('./mssql/mssql.init.js').MsSqlInit;
 
 // Importo funcioón de inicialización para servicios
-var ServicesInit = require('./services/services.init.js').ServicesInit;
+const ServicesInit = require('./services/services.init.js').ServicesInit;
 
 // Obtengo aplicacion de Exress
-var app = express();
+let app = express();
 
 // Referencia al server HTTP
-var httpServer;
+let httpServer;
+// Referencia al server HTTPS
+let httpsServer;
 
 // Función par inicializar el server
 function InitServer() {
 
     // Obtengo la ruta para la carpeta de logs
-    var logsPath = path.resolve(__dirname, 'logs');
+    let logsPath = path.resolve(__dirname, 'logs');
 
     // Si no existe la creo
     if (!fs.existsSync(logsPath)) fs.mkdirSync(logsPath);
@@ -46,7 +54,7 @@ function InitServer() {
     log4js.configure(LOGGER_CONFIG);
 
     // Obtengo logger
-    var logger = log4js.getLogger('ServerScripts');
+    let logger = log4js.getLogger('ServerScripts');
 
     // Anuncio servicio inicializandose
     logger.info('********************************************************');
@@ -92,7 +100,7 @@ function InitServer() {
     app.use(function(req, res, next) {
         // Si me llega una solicitud con www, lo redirijo
         if (req.headers.host && req.headers.host.slice(0, 4) === 'www.') {
-            var newHost = req.headers.host.slice(4);
+            let newHost = req.headers.host.slice(4);
             return res.redirect(301, req.protocol + '://' + newHost + req.originalUrl);
         }
         // En cualquier otro caso sigo ejecutando
@@ -145,6 +153,41 @@ function InitServer() {
                 });
             });
         }
+
+    ).then(
+        result => {
+            // Inicializo servicio HTTPS
+            return new Promise((resolve, reject) => {
+
+                // Escribo a log
+                logger.info('Iniciando servicio HTTPS');
+                // Logueo a consola
+                console.log('Iniciando servicio HTTPS');
+
+                // Creo y obtengo el servidor HTTPS
+                httpsServer = https.createServer({
+                    //SNICallback: cert_shared_1.SNICallback,
+                    key: fs.readFileSync(HTTPS_DEFAULT_KEY),
+                    cert: fs.readFileSync(HTTPS_DEFAULT_CERT),
+                    ciphers: HTTPS_CIPHERS,
+                }, app);
+
+                // Seteo timeous altos para evitar problema ECONNRESET / 502 Bad gateway con ELB de Amazon
+                httpsServer.keepAliveTimeout = (60 * 1000) + 1000;
+                httpsServer.headersTimeout = (60 * 1000) + 2000;
+
+                // Levanto servicio HTTP en el puerto configurado
+                httpsServer.listen(HTTPS_BINDING_PORT, HTTPS_BINDING_HOST)
+                .on('listening', () => {
+                    // Escribo a log
+                    logger.info('Servicio HTTPS escuchando en ' + httpsServer.address().address + ':' + HTTPS_BINDING_PORT.toString());
+                    // Logueo a consola
+                    console.log('Servicio HTTPS escuchando en ' + httpsServer.address().address + ':' + HTTPS_BINDING_PORT.toString());
+                    // Resuelvo promesa
+                    resolve(true);
+                });
+            });
+        }
     ).then(
         result => {
             // Escribo a log
@@ -155,7 +198,7 @@ function InitServer() {
     ).catch(
         err => {
             // Obtengo mensaje de error
-            var errorMsg = (typeof err === 'string' ? err : err.message || err.description || '');
+            let errorMsg = (typeof err === 'string' ? err : err.message || err.description || '');
 
             // Escribo a log
             logger.error('Error al inicializar el servicio: ' + errorMsg);

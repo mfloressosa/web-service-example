@@ -1,16 +1,16 @@
 // Importo librerías
-var sql = require("mssql");
-var log4js = require("log4js");
+const sql = require("mssql");
+const log4js = require("log4js");
 
 // Importo configuraciones
-var MSSQL_CONFIG = require("../config/mssql.config").MSSQL_CONFIG;
+const MSSQL_CONFIG = require("../config/mssql.config").MSSQL_CONFIG;
 
 // Importo funciones de inicialización para cada entidad
 var CurrencyMSSql = require("./currency.mssql").CurrencyMSSql;
 var ProductMSSql = require("./product.mssql").ProductMSSql;
 
 // Obtengo logger
-var logger = log4js.getLogger('ServerScripts');
+let logger = log4js.getLogger('ServerScripts');
 
 // Funcion para inicializar conexion
 function MsSqlInit(app) {
@@ -24,11 +24,11 @@ function MsSqlInit(app) {
         console.log('Iniciando conexión a base de datos \'' + MSSQL_CONFIG.server + '\'');
 
         // Creo e inicializo la conexion
-        var sqlConn = new sql.Connection(MSSQL_CONFIG, function (err) {
+        let sqlConn = new sql.Connection(MSSQL_CONFIG, function (err) {
             // Verifico si hubo error
             if (err) {
                 // Mensaje de error
-                var errMsg = (typeof err === 'string' ? err : err.message || err.description || 'Error al ejecutar solicitud');
+                let errMsg = (typeof err === 'string' ? err : err.message || err.description || 'Error al ejecutar solicitud');
 
                 // Escribo a log
                 logger.error('No se pudo establecer conexion a base de datos: ' + errMsg);
@@ -41,7 +41,7 @@ function MsSqlInit(app) {
                 // Escribo a log
                 logger.info('Conexión a base de datos establecida');
                 // Escribo a consola
-                console.log('Conexión a base de datos establecida');                
+                console.log('Conexión a base de datos establecida');
 
                 // Resultado OK de la promesa
                 resolve(true);

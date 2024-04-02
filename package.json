@@ -15,6 +15,7 @@
     "express": "4.17.1",
     "log4js": "6.1.2",
     "moment": "2.22.0",
-    "mssql": "3.3.0"
+    "mssql": "3.3.0",
+    "stack-trace": "0.0.9"
   }
 }

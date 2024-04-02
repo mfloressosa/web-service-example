@@ -1,60 +1,60 @@
-var path = require("path");
-var stackTrace = require("stack-trace");
+const path = require("path");
+const stackTrace = require("stack-trace");
 
 // Obtiene el PID asociado al log
-var getLogPid = function () {
+let getLogPid = function () {
     // Obtengo pid
-    var pid = process.pid.toString();
+    let pid = process.pid.toString();
     // Devuevlo con formato y largo fijo
     return (pid + '     ').substring(0, 5);
 };
 
 // Obtiene y arma el dato de nivel de log
-var getLogLevel = function (loggingEvent) {
+let getLogLevel = function (loggingEvent) {
     // Largo del resultado a devolver
-    var resultLength = 5;
+    let resultLength = 5;
     // Obtengo nivel de log
-    var level = loggingEvent.level.toString();
+    let level = loggingEvent.level.toString();
     // Devuevlo con formato y largo fijo
     return '[' + (level + Array(resultLength + 1).join(' ')).substring(0, resultLength) + ']';
 };
 
 // Obtiene y arma el dato de categoría de log
-var getLogCategory = function(loggingEvent) {
+let getLogCategory = function(loggingEvent) {
     // Largo del resultado a devolver
-    var resultLength = 20;
+    let resultLength = 20;
     // Obtengo categoría de log
-    var category = loggingEvent.categoryName.toString() + '.log';
+    let category = loggingEvent.categoryName.toString() + '.log';
     // Devuevlo con formato y largo fijo
     return '[' + (category + Array(resultLength + 1).join(' ')).substring(0, resultLength) + ']';
 };
 
 // Obtiene y arma el contexto asiciado al log
-var getLogContext = function(loggingEvent) {
+let getLogContext = function(loggingEvent) {
     // Largo del resultado a devolver
-    var resultLength = 30;
+    let resultLength = 30;
     // Obtengo el trace de la ejecucion actual
-    var trace = stackTrace.get();
+    let trace = stackTrace.get();
     // Verifico que tengo al menos la cantidad esperada de llamados
     if (trace.length <= 15) return '[Unknown context               ]';
     // Obtengo el nodo correspondiente a la funcion que llamo al logger
-    var caller = trace[15];
+    let caller = trace[15];
     // Obtengo el file path del archivo donde se esta ejecutando
-    var filePath = caller.getFileName();
+    let filePath = caller.getFileName();
     // Verifico que tengo al menos la cantidad esperada de llamados
     if (!filePath) return '[Unknown context               ]';
     // Obtengo las variables del contexto
-    var fileName = path.basename(filePath) || '';
-    var lineNumber = caller.getLineNumber().toString() || '';
+    let fileName = path.basename(filePath) || '';
+    let lineNumber = caller.getLineNumber().toString() || '';
     // Armo y acomodo el contexto para que tenga siempre el mismo largo
-    var context = (fileName + ':' + lineNumber);
+    let context = (fileName + ':' + lineNumber);
     context = ( context.length > resultLength ? '...' + context.slice(-1 * (resultLength - ('...').length)) : context );
     // Devuelvo el texto completo juntando todo
     return '[' + (context + Array(resultLength + 1).join(' ')).substring(0, resultLength) + ']';
 };
 
 // Devuelve un file appender en base a un nombre de archivo
-var GetFileAppender = function(logName, showContext, showCategory) {
+let GetFileAppender = function(logName, showContext, showCategory) {
     return {
         type: 'file',
         filename: path.resolve(__dirname, '..', 'logs', logName + '.log'),
@@ -75,7 +75,7 @@ var GetFileAppender = function(logName, showContext, showCategory) {
 };
 
 // Devuelve un console appender en base a un nombre de archivo
-var GetConsoleAppender = function (logName, showContext, showCategory) {
+let GetConsoleAppender = function (logName, showContext, showCategory) {
     return ({
         type: 'console',
         category: logName,
@@ -93,7 +93,7 @@ var GetConsoleAppender = function (logName, showContext, showCategory) {
 };
 
 // Devuelve un file appender en base a un nombre de archivo
-var GetLogLevelAppender = function (level, appender) {
+let GetLogLevelAppender = function (level, appender) {
     return ({
         type: 'logLevelFilter',
         level: level,
@@ -102,7 +102,7 @@ var GetLogLevelAppender = function (level, appender) {
 };
 
 // Devuelve una categoría en base a un appender y el nivel mínimo a loguear
-var GetCategory = function (appender, level, sendToErrorLog) {
+let GetCategory = function (appender, level, sendToErrorLog) {
     return ({
         appenders: [
             appender

@@ -3,3 +3,6 @@
 
 # Carpetas de logs
 /logs/
+
+# Archivo package-lock.json
+/package-lock.json
